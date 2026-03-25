@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.smartgallery.ai"
+    namespace = "com.smartgallery.ai.engine"
     compileSdk = 34
 
     defaultConfig {
