@@ -79,6 +79,8 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.work.runtime.ktx)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)

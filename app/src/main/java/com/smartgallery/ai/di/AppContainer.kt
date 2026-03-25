@@ -8,14 +8,9 @@ import com.smartgallery.ai.engine.LocalAiEngine
 import com.smartgallery.ai.engine.MediaPipeFaceDetector
 import com.smartgallery.ai.engine.SmartAiEngine
 import com.smartgallery.ai.engine.TfliteFaceRecognizer
-import com.smartgallery.data.db.AppDatabase
+import com.smartgallery.data.model.FaceBox
 import com.smartgallery.data.repository.AlbumRepository
 import com.smartgallery.data.repository.FaceRepository
-import com.smartgallery.data.repository.MediaRepository
-import com.smartgallery.data.repository.PeopleRepository
-import com.smartgallery.data.repository.SearchRepository
-import com.smartgallery.data.repository.impl.DemoAlbumRepository
-import com.smartgallery.data.repository.impl.MediaStoreMediaRepository
 import com.smartgallery.data.repository.impl.MediaStoreSearchRepository
 import com.smartgallery.data.repository.impl.RoomFaceRepository
 import com.smartgallery.data.repository.impl.RoomPeopleRepository
