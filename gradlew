@@ -10,6 +10,6 @@ else
   JAVA_CMD="java"
 fi
 
-CLASSPATH="$DIR/gradle/wrapper/gradle-wrapper.jar"
+CLASSPATH="$DIR/gradle/wrapper/gradle-wrapper.jar:$DIR/gradle/wrapper/gradle-wrapper-shared.jar"
 
 exec "$JAVA_CMD" -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
