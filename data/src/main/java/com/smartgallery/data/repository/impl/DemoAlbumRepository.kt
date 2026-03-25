@@ -11,4 +11,8 @@ class DemoAlbumRepository : AlbumRepository {
     private val albumsState = MutableStateFlow(DemoData.albums)
 
     override fun albums(): Flow<List<Album>> = albumsState.asStateFlow()
+
+    override suspend fun getAlbumById(id: String): Album? {
+        return DemoData.albums.find { it.id == id }
+    }
 }

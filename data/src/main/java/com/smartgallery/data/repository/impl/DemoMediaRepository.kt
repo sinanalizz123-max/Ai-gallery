@@ -39,6 +39,11 @@ class DemoMediaRepository(
         }.flow
     }
 
+    override fun mediaInAlbum(albumId: String): Flow<PagingData<MediaItem>> {
+        // Just return all media for demo albums
+        return pagedMedia()
+    }
+
     override suspend fun getMediaDetails(id: Long): MediaDetails? {
         val media = getMediaById(id) ?: return null
         return MediaDetails(
