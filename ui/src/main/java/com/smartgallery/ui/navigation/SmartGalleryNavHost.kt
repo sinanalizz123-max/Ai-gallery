@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.smartgallery.ai.engine.SmartAiEngine
 import com.smartgallery.data.repository.AlbumRepository
+import com.smartgallery.data.repository.FaceRepository
 import com.smartgallery.data.repository.MediaRepository
 import com.smartgallery.data.repository.PeopleRepository
 import com.smartgallery.data.repository.SearchRepository
@@ -30,7 +31,8 @@ fun SmartGalleryNavHost(
     peopleRepository: PeopleRepository,
     albumRepository: AlbumRepository,
     searchRepository: SearchRepository,
-    aiEngine: SmartAiEngine
+    aiEngine: SmartAiEngine,
+    faceRepository: FaceRepository
 ) {
     NavHost(
         navController = navController,
@@ -72,7 +74,8 @@ fun SmartGalleryNavHost(
             val mediaId = backStackEntry.arguments?.getLong("mediaId") ?: 0L
             PhotoDetailScreen(
                 mediaId = mediaId,
-                mediaRepository = mediaRepository
+                mediaRepository = mediaRepository,
+                faceRepository = faceRepository
             )
         }
         composable(
@@ -87,7 +90,10 @@ fun SmartGalleryNavHost(
             )
         }
         composable(Routes.Settings.route) {
-            SettingsScreen(paddingValues = paddingValues)
+            SettingsScreen(
+                paddingValues = paddingValues,
+                peopleRepository = peopleRepository
+            )
         }
     }
 }

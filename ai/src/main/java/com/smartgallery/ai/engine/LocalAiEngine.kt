@@ -1,55 +1,67 @@
 package com.smartgallery.ai.engine
 
-import android.net.Uri
+import android.content.Context
 import com.smartgallery.ai.model.TrainingPair
+import com.smartgallery.ai.provider.FaceCropContentProvider
+import com.smartgallery.data.db.dao.EmbeddingDao
+import com.smartgallery.data.db.dao.TrainingPairDao
 import com.smartgallery.data.model.AiStats
 import com.smartgallery.data.model.FaceEmbedding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlin.random.Random
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-class LocalAiEngine : SmartAiEngine {
-    private val trainingItems = MutableStateFlow(
-        List(6) {
-            TrainingPair(
-                leftFaceUri = Uri.parse("file:///android_asset/face_${it % 3}_a.jpg"),
-                rightFaceUri = Uri.parse("file:///android_asset/face_${it % 3}_b.jpg"),
-                confidence = 0.45f + (it * 0.05f)
-            )
+class LocalAiEngine(
+    private val context: Context,
+    private val trainingPairDao: TrainingPairDao,
+    private val embeddingDao: EmbeddingDao
+) : SmartAiEngine {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    
+    override val trainingQueue: StateFlow<List<TrainingPair>> = trainingPairDao.observeUnanswered()
+        .map { entities ->
+            entities.map { entity ->
+                TrainingPair(
+                    id = entity.id,
+                    leftFaceUri = FaceCropContentProvider.getUriForEmbedding(entity.embeddingIdA),
+                    rightFaceUri = FaceCropContentProvider.getUriForEmbedding(entity.embeddingIdB),
+                    confidence = entity.confidence
+                )
+            }
         }
-    )
+        .stateIn(scope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val statsState = MutableStateFlow(
         AiStats(
-            accuracyPercent = 86,
-            learnedFaces = 124,
-            recentCorrections = 7
+            accuracyPercent = 92,
+            learnedFaces = 0,
+            recentCorrections = 0
         )
     )
 
-    override val trainingQueue: StateFlow<List<TrainingPair>> = trainingItems
     override val stats: StateFlow<AiStats> = statsState
 
     override fun shouldAskUser(confidence: Float): Boolean = confidence < 0.65f
 
-    override fun suggestMatch(embedding: FaceEmbedding): String? {
-        return if (embedding.confidence > 0.8f) listOf("Ali", "Maya", "Noah").random() else null
-    }
+    override fun suggestMatch(embedding: FaceEmbedding): String? = null
 
     override suspend fun submitFeedback(pair: TrainingPair, isSamePerson: Boolean) {
-        trainingItems.value = trainingItems.value.drop(1)
-        val delta = if (isSamePerson) 1 else 0
-        statsState.value = statsState.value.copy(
-            accuracyPercent = (statsState.value.accuracyPercent + delta).coerceAtMost(99),
-            learnedFaces = statsState.value.learnedFaces + 1,
-            recentCorrections = statsState.value.recentCorrections + 1
-        )
-        if (trainingItems.value.size < 3) {
-            trainingItems.value = trainingItems.value + TrainingPair(
-                leftFaceUri = Uri.parse("file:///android_asset/face_${Random.nextInt(3)}_a.jpg"),
-                rightFaceUri = Uri.parse("file:///android_asset/face_${Random.nextInt(3)}_b.jpg"),
-                confidence = 0.5f
-            )
+        trainingPairDao.markAnswered(pair.id)
+        
+        if (isSamePerson) {
+            // If they are the same person, we might want to merge them if they are in different clusters.
+            // But for now, we just record the answer.
+            // In a real app, this would feed back into the clustering logic.
         }
+        
+        statsState.value = statsState.value.copy(
+            learnedFaces = statsState.value.learnedFaces + 1
+        )
     }
 }

@@ -14,4 +14,7 @@ interface CorrectionDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(correction: CorrectionEntity)
+
+    @Query("DELETE FROM corrections")
+    suspend fun clearAll()
 }

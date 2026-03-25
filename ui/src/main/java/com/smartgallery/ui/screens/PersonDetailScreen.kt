@@ -1,5 +1,6 @@
 package com.smartgallery.ui.screens
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,10 +11,13 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,12 +31,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
+import com.smartgallery.data.model.Person
 import com.smartgallery.data.repository.MediaRepository
 import com.smartgallery.data.repository.PeopleRepository
 import com.smartgallery.ui.components.PhotoGridItem
 import com.smartgallery.ui.viewmodel.PersonDetailViewModel
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PersonDetailScreen(
     personId: String,
@@ -43,8 +49,11 @@ fun PersonDetailScreen(
         factory = PersonDetailViewModelFactory(mediaRepository, peopleRepository)
     )
     val pagingItems = viewModel.mediaForPerson(personId).collectAsLazyPagingItems()
+    val people by peopleRepository.people().collectAsState(initial = emptyList<Person>())
     val scope = rememberCoroutineScope()
     var renameText by remember { mutableStateOf("") }
+    var selectedIds by remember { mutableStateOf(setOf<Long>()) }
+    var mergeMenuOpen by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -66,13 +75,37 @@ fun PersonDetailScreen(
             }) { Text("Save") }
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = {
-                scope.launch { viewModel.merge(personId, "p2") }
-            }) { Text("Merge faces") }
-            Button(onClick = {
-                scope.launch { viewModel.removeWrong(personId, listOf(1L, 2L)) }
-            }) { Text("Remove wrong") }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Button(onClick = { mergeMenuOpen = true }) { Text("Merge faces") }
+            DropdownMenu(
+                expanded = mergeMenuOpen,
+                onDismissRequest = { mergeMenuOpen = false }
+            ) {
+                people.filter { it.id != personId }.forEach { person ->
+                    DropdownMenuItem(
+                        text = { Text("Merge with ${person.name}") },
+                        onClick = {
+                            mergeMenuOpen = false
+                            scope.launch { viewModel.merge(personId, person.id) }
+                        }
+                    )
+                }
+                if (people.size <= 1) {
+                    DropdownMenuItem(
+                        text = { Text("No other people yet") },
+                        onClick = { mergeMenuOpen = false }
+                    )
+                }
+            }
+
+            if (selectedIds.isNotEmpty()) {
+                Button(onClick = {
+                    scope.launch {
+                        viewModel.removeWrong(personId, selectedIds.toList())
+                        selectedIds = emptySet()
+                    }
+                }) { Text("Remove selected") }
+            }
         }
 
         LazyVerticalGrid(
@@ -89,13 +122,23 @@ fun PersonDetailScreen(
                 val item = pagingItems[index] ?: return@items
                 PhotoGridItem(
                     item = item,
-                    isSelected = false,
-                    onClick = { },
-                    onLongPress = { }
+                    isSelected = selectedIds.contains(item.id),
+                    onClick = {
+                        if (selectedIds.isNotEmpty()) {
+                            selectedIds = selectedIds.toggle(item.id)
+                        }
+                    },
+                    onLongPress = {
+                        selectedIds = selectedIds.toggle(item.id)
+                    }
                 )
             }
         }
     }
+}
+
+private fun Set<Long>.toggle(id: Long): Set<Long> {
+    return if (contains(id)) minus(id) else plus(id)
 }
 
 private class PersonDetailViewModelFactory(

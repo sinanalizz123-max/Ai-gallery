@@ -1,10 +1,15 @@
 package com.smartgallery.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.smartgallery.data.repository.PeopleRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
-class SettingsViewModel : ViewModel() {
+class SettingsViewModel(
+    private val peopleRepository: PeopleRepository
+) : ViewModel() {
     private val detectionEnabledState = MutableStateFlow(true)
     private val privacyModeState = MutableStateFlow(true)
 
@@ -17,5 +22,17 @@ class SettingsViewModel : ViewModel() {
 
     fun setPrivacyMode(enabled: Boolean) {
         privacyModeState.value = enabled
+    }
+
+    fun rescanGallery() {
+        viewModelScope.launch {
+            peopleRepository.rescanGallery()
+        }
+    }
+
+    fun clearAiData() {
+        viewModelScope.launch {
+            peopleRepository.clearAiData()
+        }
     }
 }

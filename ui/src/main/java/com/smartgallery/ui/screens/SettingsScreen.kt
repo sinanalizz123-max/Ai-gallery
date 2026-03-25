@@ -17,12 +17,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.smartgallery.data.repository.PeopleRepository
 import com.smartgallery.ui.viewmodel.SettingsViewModel
 
 @Composable
-fun SettingsScreen(paddingValues: PaddingValues) {
-    val viewModel: SettingsViewModel = viewModel()
+fun SettingsScreen(
+    paddingValues: PaddingValues,
+    peopleRepository: PeopleRepository
+) {
+    val viewModel: SettingsViewModel = viewModel(
+        factory = SettingsViewModelFactory(peopleRepository)
+    )
     val detectionEnabled by viewModel.detectionEnabled.collectAsState()
     val privacyMode by viewModel.privacyMode.collectAsState()
 
@@ -53,7 +61,15 @@ fun SettingsScreen(paddingValues: PaddingValues) {
             Switch(checked = privacyMode, onCheckedChange = viewModel::setPrivacyMode)
         }
 
-        Button(onClick = { }) { Text("Re-scan gallery") }
-        Button(onClick = { }) { Text("Clear AI data") }
+        Button(onClick = viewModel::rescanGallery) { Text("Re-scan gallery") }
+        Button(onClick = viewModel::clearAiData) { Text("Clear AI data") }
+    }
+}
+
+private class SettingsViewModelFactory(
+    private val peopleRepository: PeopleRepository
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return SettingsViewModel(peopleRepository) as T
     }
 }

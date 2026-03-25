@@ -8,6 +8,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.smartgallery.ai.engine.SmartAiEngine
 import com.smartgallery.data.repository.AlbumRepository
+import com.smartgallery.data.repository.FaceRepository
 import com.smartgallery.data.repository.MediaRepository
 import com.smartgallery.data.repository.PeopleRepository
 import com.smartgallery.data.repository.SearchRepository
@@ -22,7 +23,8 @@ fun SmartGalleryApp(
     peopleRepository: PeopleRepository,
     albumRepository: AlbumRepository,
     searchRepository: SearchRepository,
-    aiEngine: SmartAiEngine
+    aiEngine: SmartAiEngine,
+    faceRepository: FaceRepository
 ) {
     SmartGalleryTheme {
         val navController = rememberNavController()
@@ -56,7 +58,8 @@ fun SmartGalleryApp(
                 peopleRepository = peopleRepository,
                 albumRepository = albumRepository,
                 searchRepository = searchRepository,
-                aiEngine = aiEngine
+                aiEngine = aiEngine,
+                faceRepository = faceRepository
             )
         }
     }

@@ -11,6 +11,7 @@ import androidx.room.Room
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.smartgallery.ai.engine.FaceEmbeddingPipeline
+import com.smartgallery.ai.engine.GroupingLogic
 import com.smartgallery.ai.engine.MediaPipeFaceDetector
 import com.smartgallery.ai.engine.TfliteFaceRecognizer
 import com.smartgallery.data.datasource.MediaStoreDataSource
@@ -52,8 +53,12 @@ class FaceRecognitionWorker(
             .fallbackToDestructiveMigration()
             .build()
         val embeddingDao = db.embeddingDao()
+        val personDao = db.personDao()
+        val trainingPairDao = db.trainingPairDao()
+        val groupingLogic = GroupingLogic(embeddingDao, personDao, trainingPairDao)
 
         var newestTimestamp = lastScan
+        var inserted = false
 
         for (item in media) {
             newestTimestamp = maxOf(newestTimestamp, item.dateTakenEpochMillis)
@@ -75,7 +80,13 @@ class FaceRecognitionWorker(
                     createdAt = System.currentTimeMillis()
                 )
                 embeddingDao.insert(entity)
+                inserted = true
             }
+        }
+
+        if (inserted) {
+            groupingLogic.buildAndPersistClusters()
+            groupingLogic.generateUncertainPairs()
         }
 
         prefs.edit().putLong(KEY_LAST_SCAN, newestTimestamp).apply()

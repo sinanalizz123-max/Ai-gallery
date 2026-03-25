@@ -16,7 +16,8 @@ class MainActivity : ComponentActivity() {
                 peopleRepository = appContainer.peopleRepository,
                 albumRepository = appContainer.albumRepository,
                 searchRepository = appContainer.searchRepository,
-                aiEngine = appContainer.aiEngine
+                aiEngine = appContainer.aiEngine,
+                faceRepository = appContainer.faceRepository
             )
         }
     }

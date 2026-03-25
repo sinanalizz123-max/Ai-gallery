@@ -12,9 +12,15 @@ interface PersonDao {
     @Query("SELECT * FROM people ORDER BY updatedAt DESC")
     fun observePeople(): Flow<List<PersonEntity>>
 
+    @Query("SELECT * FROM people")
+    suspend fun getAll(): List<PersonEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(person: PersonEntity)
 
     @Query("DELETE FROM people WHERE id = :personId")
     suspend fun delete(personId: String)
+
+    @Query("DELETE FROM people")
+    suspend fun clearAll()
 }

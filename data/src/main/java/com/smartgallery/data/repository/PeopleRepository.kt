@@ -9,4 +9,6 @@ interface PeopleRepository {
     suspend fun renamePerson(personId: String, newName: String)
     suspend fun mergePeople(primaryId: String, secondaryId: String)
     suspend fun removeWrongPhotos(personId: String, mediaIds: List<Long>)
+    suspend fun clearAiData()
+    suspend fun rescanGallery()
 }
