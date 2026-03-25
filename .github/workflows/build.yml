@@ -22,12 +22,14 @@ jobs:
           java-version: "17"
           cache: "gradle"
 
-      - name: Download FaceNet model
+      - name: Download models
         run: |
           mkdir -p ai/src/main/assets/models
           curl -L "https://raw.githubusercontent.com/shubham0204/FaceRecognition_With_FaceNet_Android/master/app/src/main/assets/facenet.tflite" \
             -o ai/src/main/assets/models/mobilefacenet.tflite
-          ls -lh ai/src/main/assets/models/mobilefacenet.tflite
+          curl -L "https://storage.googleapis.com/mediapipe-models/face_detector/short_range/float16/latest/face_detector_short_range.tflite" \
+            -o ai/src/main/assets/models/face_detection_short_range.tflite
+          ls -lh ai/src/main/assets/models
 
       - name: Build Debug APK
         run: ./gradlew :app:assembleDebug
