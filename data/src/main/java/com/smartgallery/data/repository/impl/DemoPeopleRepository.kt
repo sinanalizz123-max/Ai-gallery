@@ -31,4 +31,12 @@ class DemoPeopleRepository : PeopleRepository {
             if (it.id == personId) it.copy(photoCount = (it.photoCount - mediaIds.size).coerceAtLeast(0)) else it
         }
     }
+
+    override suspend fun clearAiData() {
+        peopleState.value = emptyList()
+    }
+
+    override suspend fun rescanGallery() {
+        // No-op for demo
+    }
 }

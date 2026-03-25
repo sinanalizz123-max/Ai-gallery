@@ -149,8 +149,7 @@ class MediaStoreDataSource(private val context: Context) {
         val projection = arrayOf(
             MediaStore.MediaColumns._ID,
             MediaStore.MediaColumns.DISPLAY_NAME,
-            MediaStore.MediaColumns.DATE_TAKEN,
-            MediaStore.MediaColumns.MEDIA_TYPE
+            MediaStore.MediaColumns.DATE_TAKEN
         )
         val selection = "${MediaStore.MediaColumns.BUCKET_ID} = ?"
         val selectionArgs = arrayOf(bucketId)
