@@ -9,6 +9,7 @@ interface MediaRepository {
     fun pagedMedia(): Flow<PagingData<MediaItem>>
     suspend fun getMediaById(id: Long): MediaItem?
     fun mediaByPerson(personId: String): Flow<PagingData<MediaItem>>
+    fun mediaInAlbum(albumId: String): Flow<PagingData<MediaItem>>
     suspend fun getMediaDetails(id: Long): MediaDetails?
     suspend fun renameMedia(id: Long, newName: String): Boolean
     suspend fun deleteMedia(id: Long): Boolean

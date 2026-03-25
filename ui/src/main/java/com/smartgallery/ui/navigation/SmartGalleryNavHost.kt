@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.smartgallery.ai.engine.SmartAiEngine
+import com.smartgallery.data.repository.AiRepository
 import com.smartgallery.data.repository.AlbumRepository
 import com.smartgallery.data.repository.FaceRepository
 import com.smartgallery.data.repository.MediaRepository
@@ -21,6 +22,7 @@ import com.smartgallery.ui.screens.PersonDetailScreen
 import com.smartgallery.ui.screens.PhotoDetailScreen
 import com.smartgallery.ui.screens.PhotosScreen
 import com.smartgallery.ui.screens.SettingsScreen
+import com.smartgallery.ui.screens.AlbumDetailScreen
 
 @Composable
 fun SmartGalleryNavHost(
@@ -32,7 +34,8 @@ fun SmartGalleryNavHost(
     albumRepository: AlbumRepository,
     searchRepository: SearchRepository,
     aiEngine: SmartAiEngine,
-    faceRepository: FaceRepository
+    faceRepository: FaceRepository,
+    aiRepository: AiRepository
 ) {
     NavHost(
         navController = navController,
@@ -44,6 +47,7 @@ fun SmartGalleryNavHost(
                 paddingValues = paddingValues,
                 mediaRepository = mediaRepository,
                 searchRepository = searchRepository,
+                aiRepository = aiRepository,
                 onOpenPhoto = { id -> navController.navigate(Routes.PhotoDetail.create(id)) }
             )
         }
@@ -57,7 +61,21 @@ fun SmartGalleryNavHost(
         composable(Routes.Albums.route) {
             AlbumsScreen(
                 paddingValues = paddingValues,
-                albumRepository = albumRepository
+                albumRepository = albumRepository,
+                onAlbumClick = { albumId -> navController.navigate(Routes.AlbumDetail.create(albumId)) }
+            )
+        }
+        composable(
+            route = Routes.AlbumDetail.route,
+            arguments = listOf(navArgument("albumId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val albumId = backStackEntry.arguments?.getString("albumId") ?: ""
+            AlbumDetailScreen(
+                albumId = albumId,
+                albumRepository = albumRepository,
+                mediaRepository = mediaRepository,
+                onBack = { navController.popBackStack() },
+                onOpenPhoto = { id -> navController.navigate(Routes.PhotoDetail.create(id)) }
             )
         }
         composable(Routes.Ai.route) {

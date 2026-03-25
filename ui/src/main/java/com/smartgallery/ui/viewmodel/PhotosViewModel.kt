@@ -16,9 +16,13 @@ import kotlinx.coroutines.flow.SharingStarted
 
 class PhotosViewModel(
     private val mediaRepository: MediaRepository,
-    private val searchRepository: SearchRepository
+    private val searchRepository: SearchRepository,
+    private val aiRepository: com.smartgallery.data.repository.AiRepository
 ) : ViewModel() {
     private val searchState = MutableStateFlow(SearchQuery())
+
+    val scanProgress = aiRepository.scanProgress
+    val isScanning = aiRepository.isScanning
 
     val pagedMedia: Flow<PagingData<MediaItem>> = searchState.flatMapLatest { query ->
         if (query.text.isBlank() && query.minPeople == null && query.maxPeople == null) {

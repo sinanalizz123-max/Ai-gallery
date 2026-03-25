@@ -75,6 +75,17 @@ class MediaStoreMediaRepository(
         }
     }
 
+    override fun mediaInAlbum(albumId: String): Flow<PagingData<MediaItem>> {
+        val filtered = dataSource.loadMediaInBucket(albumId)
+        val base = Pager(PagingConfig(pageSize = 30)) {
+            MediaPagingSource(filtered)
+        }.flow
+        val labels = labelMapFlow ?: return base
+        return combine(base, labels) { paging, labelMap ->
+            paging.map { item -> item.copy(label = labelMap[item.id]) }
+        }
+    }
+
     override suspend fun getMediaDetails(id: Long): MediaDetails? {
         return dataSource.getMediaDetails(id)
     }

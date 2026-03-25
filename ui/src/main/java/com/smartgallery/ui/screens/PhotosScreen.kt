@@ -24,11 +24,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -41,6 +43,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.smartgallery.data.repository.MediaRepository
 import com.smartgallery.data.repository.SearchRepository
+import com.smartgallery.data.repository.AiRepository
 import com.smartgallery.ui.components.PhotoGridItem
 import com.smartgallery.ui.viewmodel.PhotosViewModel
 
@@ -50,12 +53,16 @@ fun PhotosScreen(
     paddingValues: PaddingValues,
     mediaRepository: MediaRepository,
     searchRepository: SearchRepository,
+    aiRepository: AiRepository,
     onOpenPhoto: (Long) -> Unit
 ) {
     val viewModel: PhotosViewModel = viewModel(
-        factory = PhotosViewModelFactory(mediaRepository, searchRepository)
+        factory = PhotosViewModelFactory(mediaRepository, searchRepository, aiRepository)
     )
     val pagingItems = viewModel.pagedMedia.collectAsLazyPagingItems()
+    val isScanning by viewModel.isScanning.collectAsState(initial = false)
+    val scanProgress by viewModel.scanProgress.collectAsState(initial = 0)
+    
     var query by remember { mutableStateOf("") }
     var selectedIds by remember { mutableStateOf(setOf<Long>()) }
 
@@ -97,6 +104,19 @@ fun PhotosScreen(
                 Text("Grant access")
             }
             return@Column
+        }
+
+        if (isScanning) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                LinearProgressIndicator(
+                    progress = { (scanProgress ?: 0).toFloat() / 100f },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    text = "Scanning for faces... $scanProgress%",
+                    style = MaterialTheme.typography.labelSmall
+                )
+            }
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -153,7 +173,7 @@ fun PhotosScreen(
             }
         }
 
-        if (pagingItems.itemCount == 0) {
+        if (pagingItems.itemCount == 0 && !isScanning) {
             Text(
                 text = "No media found yet.",
                 style = MaterialTheme.typography.bodyMedium,
@@ -169,9 +189,10 @@ private fun Set<Long>.toggle(id: Long): Set<Long> {
 
 private class PhotosViewModelFactory(
     private val mediaRepository: MediaRepository,
-    private val searchRepository: SearchRepository
+    private val searchRepository: SearchRepository,
+    private val aiRepository: AiRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return PhotosViewModel(mediaRepository, searchRepository) as T
+        return PhotosViewModel(mediaRepository, searchRepository, aiRepository) as T
     }
 }

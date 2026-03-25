@@ -11,5 +11,8 @@ sealed class Routes(val route: String) {
     data object PersonDetail : Routes("person/{personId}") {
         fun create(personId: String) = "person/$personId"
     }
+    data object AlbumDetail : Routes("album/{albumId}") {
+        fun create(albumId: String) = "album/$albumId"
+    }
     data object Settings : Routes("settings")
 }

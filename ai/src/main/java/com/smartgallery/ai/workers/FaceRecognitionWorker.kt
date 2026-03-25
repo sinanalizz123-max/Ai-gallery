@@ -1,15 +1,20 @@
 package com.smartgallery.ai.workers
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
+import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.room.Room
 import androidx.work.CoroutineWorker
+import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import com.smartgallery.ai.engine.FaceEmbeddingPipeline
 import com.smartgallery.ai.engine.GroupingLogic
 import com.smartgallery.ai.engine.MediaPipeFaceDetector
@@ -33,12 +38,19 @@ class FaceRecognitionWorker(
             return@withContext Result.retry()
         }
 
+        createNotificationChannel()
+        try {
+            setForeground(createForegroundInfo(0))
+        } catch (e: Exception) {
+            // Might fail on some Android versions if not started from foreground service properly
+        }
+
         val prefs = applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val lastScan = prefs.getLong(KEY_LAST_SCAN, 0L)
 
         val dataSource = MediaStoreDataSource(applicationContext)
-        val media = dataSource.loadAllMedia()
-            .filter { it.dateTakenEpochMillis > lastScan }
+        val allMedia = dataSource.loadAllMedia()
+        val media = allMedia.filter { it.dateTakenEpochMillis > lastScan }
 
         if (media.isEmpty()) {
             return@withContext Result.success()
@@ -60,9 +72,17 @@ class FaceRecognitionWorker(
         var newestTimestamp = lastScan
         var inserted = false
 
-        for (item in media) {
+        media.forEachIndexed { index, item ->
+            val progress = ((index + 1).toFloat() / media.size * 100).toInt()
+            setProgress(workDataOf("progress" to progress))
+            if (index % 5 == 0) {
+                try {
+                    setForeground(createForegroundInfo(progress))
+                } catch (e: Exception) { }
+            }
+
             newestTimestamp = maxOf(newestTimestamp, item.dateTakenEpochMillis)
-            val bitmap = loadBitmap(item.uri) ?: continue
+            val bitmap = loadBitmap(item.uri) ?: return@forEachIndexed
             val analyses = pipeline.analyze(bitmap)
             analyses.forEach { analysis ->
                 val embedding = analysis.embedding
@@ -91,6 +111,29 @@ class FaceRecognitionWorker(
 
         prefs.edit().putLong(KEY_LAST_SCAN, newestTimestamp).apply()
         Result.success()
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Face Recognition",
+                NotificationManager.IMPORTANCE_LOW
+            )
+            val manager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            manager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun createForegroundInfo(progress: Int): ForegroundInfo {
+        val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
+            .setContentTitle("SmartGallery AI")
+            .setContentText("Scanning for faces... $progress%")
+            .setSmallIcon(android.R.drawable.ic_menu_search)
+            .setProgress(100, progress, false)
+            .setOngoing(true)
+            .build()
+        return ForegroundInfo(NOTIFICATION_ID, notification)
     }
 
     private fun loadBitmap(uri: Uri): Bitmap? {
@@ -130,5 +173,7 @@ class FaceRecognitionWorker(
         private const val PREFS_NAME = "face_recognition_worker"
         private const val KEY_LAST_SCAN = "last_scan_epoch"
         private const val DB_NAME = "smartgallery.db"
+        private const val CHANNEL_ID = "face_worker_channel"
+        private const val NOTIFICATION_ID = 1001
     }
 }

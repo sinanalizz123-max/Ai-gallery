@@ -9,6 +9,7 @@ import com.smartgallery.ai.engine.SmartAiEngine
 import com.smartgallery.ai.engine.TfliteFaceRecognizer
 import com.smartgallery.data.db.AppDatabase
 import com.smartgallery.data.model.FaceBox
+import com.smartgallery.data.repository.AiRepository
 import com.smartgallery.data.repository.AlbumRepository
 import com.smartgallery.data.repository.FaceRepository
 import com.smartgallery.data.repository.MediaRepository
@@ -18,6 +19,7 @@ import com.smartgallery.data.repository.impl.MediaStoreMediaRepository
 import com.smartgallery.data.repository.impl.MediaStoreSearchRepository
 import com.smartgallery.data.repository.impl.RoomFaceRepository
 import com.smartgallery.data.repository.impl.RoomPeopleRepository
+import com.smartgallery.data.repository.impl.WorkManagerAiRepository
 
 interface AppContainer {
     val mediaRepository: MediaRepository
@@ -27,6 +29,7 @@ interface AppContainer {
     val aiEngine: SmartAiEngine
     val faceEmbeddingPipeline: FaceEmbeddingPipeline
     val faceRepository: FaceRepository
+    val aiRepository: AiRepository
 }
 
 class DefaultAppContainer(context: Context) : AppContainer {
@@ -64,6 +67,7 @@ class DefaultAppContainer(context: Context) : AppContainer {
     )
 
     override val faceRepository: FaceRepository = RoomFaceRepository(embeddingDao, personDao)
+    override val aiRepository: AiRepository = WorkManagerAiRepository(context)
 
     private companion object {
         private const val DB_NAME = "smartgallery.db"

@@ -39,4 +39,17 @@ class MediaStoreAlbumRepository(context: Context) : AlbumRepository {
         
         emit(aiAlbums + albums)
     }.flowOn(Dispatchers.IO)
+
+    override suspend fun getAlbumById(id: String): Album? {
+        val buckets = dataSource.loadAllBuckets()
+        val bucket = buckets.find { it.first == id } ?: return null
+        val mediaInBucket = dataSource.loadMediaInBucket(id)
+        return Album(
+            id = bucket.first,
+            name = bucket.second,
+            coverUri = mediaInBucket.firstOrNull()?.uri,
+            photoCount = mediaInBucket.size,
+            type = AlbumType.SYSTEM
+        )
+    }
 }

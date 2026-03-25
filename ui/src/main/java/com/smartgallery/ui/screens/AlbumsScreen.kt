@@ -28,7 +28,8 @@ import com.smartgallery.ui.viewmodel.AlbumsViewModel
 @Composable
 fun AlbumsScreen(
     paddingValues: PaddingValues,
-    albumRepository: AlbumRepository
+    albumRepository: AlbumRepository,
+    onAlbumClick: (String) -> Unit
 ) {
     val viewModel: AlbumsViewModel = viewModel(
         factory = AlbumsViewModelFactory(albumRepository)
@@ -52,20 +53,21 @@ fun AlbumsScreen(
             Text(text = "System albums", style = MaterialTheme.typography.titleLarge)
         }
         items(systemAlbums) { album ->
-            AlbumCard(album)
+            AlbumCard(album, onClick = { onAlbumClick(album.id) })
         }
         item(span = { GridItemSpan(maxLineSpan) }) {
             Text(text = "AI albums", style = MaterialTheme.typography.titleLarge)
         }
         items(aiAlbums) { album ->
-            AlbumCard(album)
+            AlbumCard(album, onClick = { onAlbumClick(album.id) })
         }
     }
 }
 
 @Composable
-private fun AlbumCard(album: Album) {
+private fun AlbumCard(album: Album, onClick: () -> Unit) {
     androidx.compose.material3.Surface(
+        onClick = onClick,
         shape = MaterialTheme.shapes.large,
         color = MaterialTheme.colorScheme.surface
     ) {

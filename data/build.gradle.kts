@@ -26,6 +26,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.paging.runtime)
+    implementation(libs.work.runtime.ktx)
 
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
