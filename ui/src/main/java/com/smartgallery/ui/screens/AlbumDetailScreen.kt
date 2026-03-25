@@ -80,7 +80,8 @@ fun AlbumDetailScreen(
                 PhotoGridItem(
                     item = item,
                     isSelected = false,
-                    onClick = { onOpenPhoto(item.id) }
+                    onClick = { onOpenPhoto(item.id) },
+                    onLongPress = { }
                 )
             }
         }
