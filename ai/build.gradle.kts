@@ -33,4 +33,6 @@ dependencies {
     implementation(libs.work.runtime.ktx)
     implementation(libs.mediapipe.tasks.vision)
     implementation(libs.tflite)
+    implementation(libs.room.runtime)
+    implementation(libs.gms.tasks)
 }
