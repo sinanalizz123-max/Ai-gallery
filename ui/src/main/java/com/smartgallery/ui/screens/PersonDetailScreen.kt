@@ -39,7 +39,9 @@ fun PersonDetailScreen(
     mediaRepository: MediaRepository,
     peopleRepository: PeopleRepository
 ) {
-    val viewModel = viewModel(factory = PersonDetailViewModelFactory(mediaRepository, peopleRepository))
+    val viewModel: PersonDetailViewModel = viewModel(
+        factory = PersonDetailViewModelFactory(mediaRepository, peopleRepository)
+    )
     val pagingItems = viewModel.mediaForPerson(personId).collectAsLazyPagingItems()
     val scope = rememberCoroutineScope()
     var renameText by remember { mutableStateOf("") }

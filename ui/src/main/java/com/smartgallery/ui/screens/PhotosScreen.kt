@@ -52,7 +52,9 @@ fun PhotosScreen(
     searchRepository: SearchRepository,
     onOpenPhoto: (Long) -> Unit
 ) {
-    val viewModel = viewModel(factory = PhotosViewModelFactory(mediaRepository, searchRepository))
+    val viewModel: PhotosViewModel = viewModel(
+        factory = PhotosViewModelFactory(mediaRepository, searchRepository)
+    )
     val pagingItems = viewModel.pagedMedia.collectAsLazyPagingItems()
     var query by remember { mutableStateOf("") }
     var selectedIds by remember { mutableStateOf(setOf<Long>()) }

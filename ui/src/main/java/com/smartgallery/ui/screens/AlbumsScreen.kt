@@ -30,8 +30,11 @@ fun AlbumsScreen(
     paddingValues: PaddingValues,
     albumRepository: AlbumRepository
 ) {
-    val viewModel = viewModel(factory = AlbumsViewModelFactory(albumRepository))
-    val albums by viewModel.albumRepository.albums().collectAsState(initial = emptyList())
+    val viewModel: AlbumsViewModel = viewModel(
+        factory = AlbumsViewModelFactory(albumRepository)
+    )
+    val albums by viewModel.albumRepository.albums()
+        .collectAsState(initial = emptyList<Album>())
     val systemAlbums = albums.filter { it.type == AlbumType.SYSTEM }
     val aiAlbums = albums.filter { it.type == AlbumType.AI }
 

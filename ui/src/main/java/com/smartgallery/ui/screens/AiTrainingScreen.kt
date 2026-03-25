@@ -6,8 +6,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,7 +32,9 @@ fun AiTrainingScreen(
     aiEngine: SmartAiEngine,
     onOpenSettings: () -> Unit
 ) {
-    val viewModel = viewModel(factory = AiTrainingViewModelFactory(aiEngine))
+    val viewModel: AiTrainingViewModel = viewModel(
+        factory = AiTrainingViewModelFactory(aiEngine)
+    )
     val queue by viewModel.trainingQueue.collectAsState()
     val stats by viewModel.stats.collectAsState()
 

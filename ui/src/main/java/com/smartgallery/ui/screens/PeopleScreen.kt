@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.smartgallery.data.model.Person
 import com.smartgallery.data.repository.PeopleRepository
 import com.smartgallery.ui.components.PersonAvatarCard
 import com.smartgallery.ui.viewmodel.PeopleViewModel
@@ -28,9 +29,11 @@ fun PeopleScreen(
     peopleRepository: PeopleRepository,
     onPersonClick: (String) -> Unit
 ) {
-    val viewModel = viewModel(factory = PeopleViewModelFactory(peopleRepository))
-    val people by viewModel.people.collectAsState(initial = emptyList())
-    val unknown by viewModel.unknownPeople.collectAsState(initial = emptyList())
+    val viewModel: PeopleViewModel = viewModel(
+        factory = PeopleViewModelFactory(peopleRepository)
+    )
+    val people by viewModel.people.collectAsState(initial = emptyList<Person>())
+    val unknown by viewModel.unknownPeople.collectAsState(initial = emptyList<Person>())
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),

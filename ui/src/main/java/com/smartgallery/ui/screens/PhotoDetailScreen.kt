@@ -26,6 +26,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.smartgallery.data.model.FaceBox
+import com.smartgallery.data.model.MediaItem
 import com.smartgallery.data.repository.MediaRepository
 import com.smartgallery.ui.viewmodel.PhotoDetailViewModel
 
@@ -34,9 +36,11 @@ fun PhotoDetailScreen(
     mediaId: Long,
     mediaRepository: MediaRepository
 ) {
-    val viewModel = viewModel(factory = PhotoDetailViewModelFactory(mediaRepository))
-    val media by viewModel.media.collectAsState()
-    val faces by viewModel.faceBoxes.collectAsState()
+    val viewModel: PhotoDetailViewModel = viewModel(
+        factory = PhotoDetailViewModelFactory(mediaRepository)
+    )
+    val media by viewModel.media.collectAsState(initial = null)
+    val faces by viewModel.faceBoxes.collectAsState(initial = emptyList<FaceBox>())
     var selectedFaceIndex by remember { mutableStateOf<Int?>(null) }
 
     LaunchedEffect(mediaId) {
@@ -53,7 +57,8 @@ fun PhotoDetailScreen(
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val width = maxWidth
             val height = maxHeight
-            faces.forEachIndexed { index, face ->
+            for (index in faces.indices) {
+                val face = faces[index]
                 val left = width * face.left
                 val top = height * face.top
                 val boxWidth = width * (face.right - face.left)
@@ -70,8 +75,7 @@ fun PhotoDetailScreen(
                 DropdownMenu(
                     expanded = selectedFaceIndex == index,
                     onDismissRequest = { selectedFaceIndex = null },
-                    modifier = Modifier
-                        .offset(left, top + boxHeight)
+                    modifier = Modifier.offset(left, top + boxHeight)
                 ) {
                     DropdownMenuItem(text = { Text(face.personId ?: "Unknown") }, onClick = {})
                     DropdownMenuItem(text = { Text("Change name") }, onClick = {})
