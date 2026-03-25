@@ -45,7 +45,7 @@ class FaceCropContentProvider : ContentProvider() {
         
         val embedding = try {
             // Need to run on a background thread if using Room, but openFile is on a binder thread.
-            // We'll use a blocking call here for simplicity as it's a content provider.
+            // We'll use a background job/blocking call here for simplicity as it's a content provider.
             kotlinx.coroutines.runBlocking {
                 db.embeddingDao().getAll().firstOrNull { it.id == embeddingId }
             }
