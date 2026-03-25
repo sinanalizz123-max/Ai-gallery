@@ -1,0 +1,6 @@
+.venv/
+upstream/
+checkpoints/
+*.ckpt
+*.pb
+*.tflite
