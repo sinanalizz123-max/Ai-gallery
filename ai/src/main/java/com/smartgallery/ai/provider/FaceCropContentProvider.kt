@@ -60,11 +60,16 @@ class FaceCropContentProvider : ContentProvider() {
             BitmapFactory.decodeStream(input)
         } ?: return null
         
+        val left = embedding.left ?: return null
+        val top = embedding.top ?: return null
+        val right = embedding.right ?: return null
+        val bottom = embedding.bottom ?: return null
+
         val box = FaceBox(
-            left = embedding.left,
-            top = embedding.top,
-            right = embedding.right,
-            bottom = embedding.bottom,
+            left = left,
+            top = top,
+            right = right,
+            bottom = bottom,
             confidence = embedding.confidence,
             personId = embedding.personId
         )
